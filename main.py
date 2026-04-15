@@ -13,6 +13,7 @@ GET /model-info   – return training metadata and model comparison results
 from pathlib import Path
 
 import joblib
+import pandas as pd
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
@@ -172,40 +173,55 @@ def get_major_stocks():
         # Fetch data in one go
         df = yf.download(tickers, period="5d", interval="1d", progress=False)
         
-        if isinstance(df.columns, yf.pandas_compatibility.pd.MultiIndex):
-            # Most recent close prices
-            latest_prices = df["Close"].iloc[-1]
-            prev_prices = df["Close"].iloc[-2]
-            
+        if not df.empty and len(df) >= 2:
             for ticker in tickers:
-                price = latest_prices[ticker]
-                prev_price = prev_prices[ticker]
-                change_pct = ((price - prev_price) / prev_price) * 100
-                
-                data.append({
-                    "symbol": ticker,
-                    "price": round(float(price), 2),
-                    "change": round(float(change_pct), 2),
-                    "status": "up" if change_pct >= 0 else "down"
-                })
+                try:
+                    # Accessing MultiIndex correctly: df["Close"][ticker]
+                    # Or df.xs("Close", axis=1, level=0)[ticker]
+                    # yfinance newer versions often use (Price, Ticker) MultiIndex
+                    if "Close" in df.columns.levels[0]:
+                        close_data = df["Close"]
+                        if ticker in close_data.columns:
+                            price = close_data[ticker].iloc[-1]
+                            prev_price = close_data[ticker].iloc[-2]
+                            
+                            if pd.isna(price) or pd.isna(prev_price):
+                                # Fallback if specific ticker has missing data in the MultiIndex
+                                t = yf.Ticker(ticker)
+                                hist = t.history(period="2d")
+                                price = hist["Close"].iloc[-1]
+                                prev_price = hist["Close"].iloc[-2]
+
+                            change_pct = ((price - prev_price) / prev_price) * 100
+                            data.append({
+                                "symbol": ticker,
+                                "price": round(float(price), 2),
+                                "change": round(float(change_pct), 2),
+                                "status": "up" if change_pct >= 0 else "down"
+                            })
+                except Exception as e:
+                    print(f"Error processing {ticker}: {e}")
+                    continue
         else:
-            # Fallback if only one ticker is returned or different format
+            # Fallback for all
             for ticker in tickers:
-                t = yf.Ticker(ticker)
-                hist = t.history(period="2d")
-                if len(hist) >= 2:
-                    price = hist["Close"].iloc[-1]
-                    prev_price = hist["Close"].iloc[-2]
-                    change_pct = ((price - prev_price) / prev_price) * 100
-                    data.append({
-                        "symbol": ticker,
-                        "price": round(float(price), 2),
-                        "change": round(float(change_pct), 2),
-                        "status": "up" if change_pct >= 0 else "down"
-                    })
+                try:
+                    t = yf.Ticker(ticker)
+                    hist = t.history(period="2d")
+                    if not hist.empty and len(hist) >= 2:
+                        price = hist["Close"].iloc[-1]
+                        prev_price = hist["Close"].iloc[-2]
+                        change_pct = ((price - prev_price) / prev_price) * 100
+                        data.append({
+                            "symbol": ticker,
+                            "price": round(float(price), 2),
+                            "change": round(float(change_pct), 2),
+                            "status": "up" if change_pct >= 0 else "down"
+                        })
+                except:
+                    continue
                     
     except Exception as exc:
-        # Fallback to empty if error
         print(f"Error fetching major stocks: {exc}")
         return []
 
