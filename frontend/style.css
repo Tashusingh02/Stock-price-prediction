@@ -421,6 +421,61 @@ button:active {
     background: var(--accent-blue);
     animation: stockPulse 1.2s ease-in-out infinite;
 }
+/* Major Stocks Section */
+.major-stocks-grid {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+    animation: fadeIn 1.5s ease-out;
+}
+
+.major-stock-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 0.8rem 1.2rem;
+    min-width: 140px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: left;
+}
+
+.major-stock-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent-blue);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+.major-stock-card .symbol {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 0.3rem;
+}
+
+.major-stock-card .price {
+    font-size: 1.1rem;
+    font-weight: 700;
+    display: block;
+}
+
+.major-stock-card .change {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-up { color: var(--accent-green); }
+.status-down { color: var(--accent-red); }
+
+@media (max-width: 600px) {
+    .major-stocks-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
 
 .loader-bar:nth-child(1) { animation-delay: 0.0s; background: var(--accent-green); }
 .loader-bar:nth-child(2) { animation-delay: 0.2s; background: #3b82f6; } /* Blue */

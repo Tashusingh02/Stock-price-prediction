@@ -12,6 +12,7 @@ const dashboard = document.getElementById('dashboard');
 const loader = document.getElementById('loader');
 const errorMessage = document.getElementById('errorMessage');
 const suggestionsContainer = document.getElementById('suggestions');
+const majorStocksContainer = document.getElementById('majorStocks');
 
 // Predefined Stock List (STATIC)
 const stocks = [
@@ -248,5 +249,42 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// Optional: Initial Load with Default Ticker (e.g. BTC-USD or AAPL)
-// window.onload = () => { tickerInput.value = 'AAPL'; analyzeAsset(); };
+/**
+ * Fetch and render major stock movers
+ */
+async function fetchMajorStocks() {
+    try {
+        const response = await fetch(`${API_BASE}/major-stocks`);
+        const data = await response.json();
+        renderMajorStocks(data);
+    } catch (err) {
+        console.error("Failed to fetch major stocks:", err);
+    }
+}
+
+function renderMajorStocks(stocks) {
+    if (!majorStocksContainer) return;
+    majorStocksContainer.innerHTML = '';
+    
+    stocks.forEach(stock => {
+        const card = document.createElement('div');
+        card.className = 'major-stock-card';
+        card.innerHTML = `
+            <span class="symbol">${stock.symbol}</span>
+            <span class="price">$${stock.price}</span>
+            <span class="change status-${stock.status}">${stock.change >= 0 ? '+' : ''}${stock.change}%</span>
+        `;
+        card.addEventListener('click', () => {
+            tickerInput.value = stock.symbol;
+            analyzeAsset();
+        });
+        majorStocksContainer.appendChild(card);
+    });
+}
+
+// Initial Load
+window.onload = () => {
+    fetchMajorStocks();
+    // Optional: Initial Load with Default Ticker (e.g. BTC-USD or AAPL)
+    // tickerInput.value = 'AAPL'; analyzeAsset();
+};

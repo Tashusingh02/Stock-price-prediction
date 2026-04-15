@@ -18,6 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 
+import yfinance as yf
 from predictor import predict as run_prediction
 
 app = FastAPI(
@@ -157,6 +158,58 @@ def model_info():
             "features":      meta.get("feature_names"),
         },
     }
+
+
+@app.get("/major-stocks", tags=["Market"])
+def get_major_stocks():
+    """
+    Fetch current price and 24h change for a set of major stocks.
+    """
+    tickers = ["AAPL", "MSFT", "GOOG", "AMZN", "TSLA", "BTC-USD"]
+    data = []
+    
+    try:
+        # Fetch data in one go
+        df = yf.download(tickers, period="5d", interval="1d", progress=False)
+        
+        if isinstance(df.columns, yf.pandas_compatibility.pd.MultiIndex):
+            # Most recent close prices
+            latest_prices = df["Close"].iloc[-1]
+            prev_prices = df["Close"].iloc[-2]
+            
+            for ticker in tickers:
+                price = latest_prices[ticker]
+                prev_price = prev_prices[ticker]
+                change_pct = ((price - prev_price) / prev_price) * 100
+                
+                data.append({
+                    "symbol": ticker,
+                    "price": round(float(price), 2),
+                    "change": round(float(change_pct), 2),
+                    "status": "up" if change_pct >= 0 else "down"
+                })
+        else:
+            # Fallback if only one ticker is returned or different format
+            for ticker in tickers:
+                t = yf.Ticker(ticker)
+                hist = t.history(period="2d")
+                if len(hist) >= 2:
+                    price = hist["Close"].iloc[-1]
+                    prev_price = hist["Close"].iloc[-2]
+                    change_pct = ((price - prev_price) / prev_price) * 100
+                    data.append({
+                        "symbol": ticker,
+                        "price": round(float(price), 2),
+                        "change": round(float(change_pct), 2),
+                        "status": "up" if change_pct >= 0 else "down"
+                    })
+                    
+    except Exception as exc:
+        # Fallback to empty if error
+        print(f"Error fetching major stocks: {exc}")
+        return []
+
+    return data
 
 
 # ── global exception handler for anything truly unexpected ───────────
