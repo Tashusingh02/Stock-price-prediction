@@ -1,10 +1,7 @@
 services:
   - type: web
-    name: stock-price-predictor
+    name: stock-predictor
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt && python train.py
     startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: TICKER
-        value: AAPL
