@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Stock Intelligence | Predictive Analytics</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>AI Stock Intelligence</h1>
+            <div class="search-container">
+                <div class="autocomplete-wrapper">
+                    <input type="text" id="tickerInput" placeholder="Enter Ticker (e.g. AAPL, TSLA, BTC-USD)" autocomplete="off">
+                    <div id="suggestions" class="suggestions-list"></div>
+                </div>
+                <button id="predictBtn">Analyze Assets</button>
+            </div>
+            <div id="loader" class="loader">
+                <div class="loader-bar"></div>
+                <div class="loader-bar"></div>
+                <div class="loader-bar"></div>
+                <div class="loader-bar"></div>
+                <div class="loader-bar"></div>
+            </div>
+            <div id="errorMessage" class="error-message"></div>
+        </header>
+
+        <!-- Empty State AI Animation -->
+        <div id="heroAnimation" class="hero-animation">
+            <div class="glowing-orb"></div>
+            <div class="scan-line"></div>
+            <div class="scan-line delayed"></div>
+            <div class="hero-text">Awaiting Ticker Input...</div>
+        </div>
+
+        <main id="dashboard" class="dashboard">
+            <!-- Chart Card -->
+            <div class="card chart-card">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                    Trend Analysis & Forecast
+                </div>
+                <div class="price-summary">
+                    <div class="price-item">
+                        <span class="label">Current Price</span>
+                        <div class="value" id="currentPrice">$0.00</div>
+                    </div>
+                    <div class="price-item">
+                        <span class="label">Avg Predicted (7D)</span>
+                        <div class="value" id="avgPredicted">$0.00</div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="predictionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Signal Card -->
+            <div class="card signal-card">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+                    Intelligence Signal
+                </div>
+                <div id="signalDisplay" class="signal-value">WAIT</div>
+                <div id="signalSubtext" style="color: var(--text-secondary); font-size: 0.8rem;">Market Recommendation</div>
+            </div>
+
+            <!-- Confidence Card -->
+            <div class="card">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                    Model Confidence
+                </div>
+                <div id="confidenceValue" class="confidence-text">0%</div>
+                <div class="confidence-container">
+                    <div id="confidenceBar" class="confidence-bar"></div>
+                </div>
+                <div style="color: var(--text-secondary); font-size: 0.8rem;">Reliability based on RMSE</div>
+            </div>
+
+            <!-- Risk Card -->
+            <div class="card">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    Risk Assessment
+                </div>
+                <div id="riskLevel" class="risk-level">Unknown</div>
+                <div style="color: var(--text-secondary); font-size: 0.8rem; margin-top: 1rem;">Based on 7D Volatility & Trend</div>
+            </div>
+
+            <!-- Explanation Card -->
+            <div class="card explanation-card">
+                <div class="card-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    AI Analyst Insights
+                </div>
+                <div id="reasonText" class="reason-text">Awaiting data analysis for specific asset insights...</div>
+                <div id="accuracyNote" class="accuracy-note"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
